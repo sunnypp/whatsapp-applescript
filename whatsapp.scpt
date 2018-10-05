@@ -39,13 +39,46 @@ on run(arguments)
   set whatsapp to (read whatsapp_file)
   close access whatsapp_file
 
-  set conversation_title to first item of arguments
-
   set rest_arguments to {}
-  repeat with i from 2 to length of arguments
-    copy item i of arguments to the end of rest_arguments
-  end repeat
-  set AppleScript's text item delimiters to space
+  if (count of arguments) < 1 then
+    set conversation_title to "unread"
+  else
+    if first item of arguments is "clear" then
+      set browsers to {"Google Chrome"}
+      repeat with browser in browsers
+        using terms from application "Google Chrome"
+          set app_is_running to is_running(browser)
+          if not app_is_running then
+            return
+          end if
+          tell application browser
+            repeat with w in windows
+              set i to 0
+              repeat with t in tabs of w
+                set i to i + 1
+                if URL of t starts with "https://web.whatsapp.com" then
+                  set active tab index of w to i
+                  set index of w to 1
+                  tell application "System Events" to tell process "Google Chrome"
+                      perform action "AXRaise" of window 1
+                  end tell
+                  tell application "Google Chrome" to activate
+                end if
+              end repeat
+            end
+          end tell
+        end
+      end
+      tell application "iTerm" to activate
+      return "cleared"
+    end
+
+    set conversation_title to first item of arguments
+    repeat with i from 2 to length of arguments
+      copy item i of arguments to the end of rest_arguments
+    end repeat
+    set AppleScript's text item delimiters to space
+  end
   set message to rest_arguments as string
 
   set browsers to {"Google Chrome", "Google Chrome Canary"}

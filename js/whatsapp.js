@@ -4,16 +4,27 @@ function simulateMouseEvents(element, eventName) {
     element.dispatchEvent(mouseEvent);
 }
 
+var looper = looper || 0;
 var selectConversation = function() {
   return new Promise(function(resolve, reject) {
     if ( conversation_title == '/' || conversation_title == '' ) {
       resolve();
     }
+      else if ( conversation_title == 'unread' ) {
+          var $conversation = jQuery('[dir=auto][title]').parent().parent().parent().parent().toArray().filter(t=>$(t).children(":eq(1)").children(":eq(1)").children(":eq(1)").text()).map(t=>$(t));
+          if (!$conversation || !$conversation.length) {
+              resolve();
+          }
+          var conversation = $conversation[looper++ % $conversation.length][0];
+          conversation.click();
+          simulateMouseEvents( conversation , 'mousedown');
+          resolve();
+      }
     else {
       // also checking .ellipsify as Group Members will also be shown with title attribute
-      var $conversation = jQuery('.ellipsify[title^="' + conversation_title + '"]');
+      var $conversation = jQuery('[dir=auto][title^="' + conversation_title + '"]');
       // fallback to "any substring" if a conversation starting with the arg is not found
-      var conversation = $conversation.length ? $conversation[0] : jQuery('.ellipsify[title*="' + conversation_title + '"]')[0];
+      var conversation = $conversation.length ? $conversation[0] : jQuery('[dir=auto][title*="' + conversation_title + '"]')[0];
       conversation.click();
       simulateMouseEvents( conversation , 'mousedown');
       resolve();
@@ -23,7 +34,7 @@ var selectConversation = function() {
 
 var insertMessage = function() {
   return new Promise(function(resolve, reject) {
-    var $element = jQuery("div.pluggable-input-body").text(message);
+    var $element = jQuery('footer').find("div.copyable-text.selectable-text").text(message);
     const event = new Event('input', { bubbles: true })
     $element[0].dispatchEvent(event)
     resolve();
@@ -32,7 +43,7 @@ var insertMessage = function() {
 
 var sendMessage = function() {
   return new Promise(function(resolve, reject) {
-    var sendButton = document.querySelector('button.compose-btn-send');
+    var sendButton = $("[data-icon=send]").parent();
     sendButton.click();
     resolve();
   });
