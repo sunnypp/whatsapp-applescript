@@ -34,7 +34,7 @@ var selectConversation = function() {
 
 var insertMessage = function() {
   return new Promise(function(resolve, reject) {
-    var $element = jQuery('footer').find("div.copyable-text.selectable-text").text(message);
+    var $element = jQuery("div.copyable-text.selectable-text").text(message);
     const event = new Event('input', { bubbles: true })
     $element[0].dispatchEvent(event)
     resolve();
